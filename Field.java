@@ -17,7 +17,7 @@ public class Field extends JPanel{
 	private boolean paused;
 	// Динамический список скачущих мячей
 	private ArrayList<BouncingBall> balls = new ArrayList<BouncingBall>(10);
-	private LinkedList<BrickClass> bricks = new LinkedList<BrickClass>();
+	
 	// Класс таймер отвечает за регулярную генерацию событий ActionEvent
 	// При создании его экземпляра используется анонимный класс,
 	// реализующий интерфейс ActionListener
@@ -28,8 +28,10 @@ public class Field extends JPanel{
 		repaint();
 		}
 	});
-	private static final int BRICKS_IN_WIDTH = 3;
-	private static final int BRICKS_IN_HEIGHT = 1; //колическтво кирпичей по длине и ширине
+	private static final int BRICKS_IN_WIDTH = 20;
+	private static final int BRICKS_IN_HEIGHT = 4; //колическтво кирпичей по длине и ширине
+	private BrickClass[][] bricks = new BrickClass[BRICKS_IN_WIDTH][BRICKS_IN_HEIGHT];
+	private boolean added_bricks = false;
 	// Конструктор класса BouncingBall
 	public Field() {
 		// Установить цвет заднего фона белым
@@ -43,9 +45,12 @@ public class Field extends JPanel{
 		super.paintComponent(g);
 		Graphics2D canvas = (Graphics2D) g;
 		// Последовательно запросить прорисовку от всех мячей из списка
-		
-		for (BrickClass brick: bricks){
-			brick.paint(canvas);
+		if(added_bricks){
+			for(int i=0;i<BRICKS_IN_WIDTH; i++){
+				for(int j=0; j<BRICKS_IN_HEIGHT; j++){
+					bricks[i][j].paint(canvas);
+				}
+			}
 		}
 		for (BouncingBall ball: balls){
 			ball.paint(canvas);
@@ -61,11 +66,13 @@ public class Field extends JPanel{
 	public void addBrick(){
 		for(int i=0; i<BRICKS_IN_WIDTH; i++){
 			for(int j=0; j<BRICKS_IN_HEIGHT; j++){
-				//System.out.println('+');
-				bricks.add(new BrickClass(this, i, j));
+				BrickClass brick = new BrickClass(this, i, j);
+				bricks[i][j] = brick;
+				//bricks.add(new BrickClass(this, i, j, bricks));
 				
 			}
 		}
+		added_bricks = true;
 		
 	}
 	// Метод синхронизированный, т.е. только один поток может
@@ -73,7 +80,6 @@ public class Field extends JPanel{
 	public synchronized void pause(){
 		// Включить режим паузы
 		paused = true;
-		System.out.println(num);
 	}
 	// Метод синхронизированный, т.е. только один поток может
 	// одновременно быть внутри

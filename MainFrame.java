@@ -14,8 +14,8 @@ import javax.swing.JMenuItem;
 public class MainFrame extends JFrame{
 	//  онстанты, задающие размер окна приложени€, если оно
 	// не распахнуто на весь экран
-	private static final int WIDTH = 700;
-	private static final int HEIGHT = 500;
+	private static final int WIDTH = 800;
+	private static final int HEIGHT = 800;
 	private JMenuItem pauseMenuItem;
 	private JMenuItem resumeMenuItem;
 	private JMenuItem brickMenuItem;
