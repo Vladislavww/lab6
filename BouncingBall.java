@@ -6,14 +6,11 @@ import java.awt.geom.Ellipse2D;
 import java.util.LinkedList;
 
 public class BouncingBall implements Runnable{
-	// Максимальный радиус, который может иметь мяч
 	private static final int MAX_RADIUS = 40;
-	// Минимальный радиус, который может иметь мяч
 	private static final int MIN_RADIUS = 3;
-	// Максимальная скорость, с которой может летать мяч
 	private static final int MAX_SPEED = 10;
-	private static final int BRICKS_IN_WIDTH = 20;
-	private static final int BRICKS_IN_HEIGHT = 4;
+	private int BRICKS_IN_WIDTH;//переделать
+	private int BRICKS_IN_HEIGHT;//переделать
 	private Field field;
 	private int radius;
 	private Color color;
@@ -24,14 +21,17 @@ public class BouncingBall implements Runnable{
 	private int speed;
 	private double speedX;
 	private double speedY;
-	private BrickClass[][] bricks;
+	private BrickClass[][] bricks; //матрица кирпичей
 	// Конструктор класса BouncingBall
-	public BouncingBall(Field field, BrickClass[][] bricks){
+	public BouncingBall(Field field, BrickClass[][] bricks, final int BRICKS_WIDTH, final int BRICKS_HEIGHT){
 		// Необходимо иметь ссылку на поле, по которому прыгает мяч,
 		// чтобы отслеживать выход за его пределы 
 		// через getWidth(), getHeight()
+		//Также необходимо иметь ссылку на матрицу препятствий для отслеживания столкновений
 		this.field = field;
 		this.bricks = bricks;
+		BRICKS_IN_WIDTH = BRICKS_WIDTH;
+		BRICKS_IN_HEIGHT = BRICKS_HEIGHT;
 		// Радиус мяча случайного размера
 		radius = new Double(Math.random()*(MAX_RADIUS - MIN_RADIUS)).intValue() + MIN_RADIUS;
 		// Абсолютное значение скорости зависит от диаметра мяча,
@@ -46,17 +46,13 @@ public class BouncingBall implements Runnable{
 		// Вычисляются горизонтальная и вертикальная компоненты скорости
 		speedX = 3*Math.cos(angle);
 		speedY = 3*Math.sin(angle);
-		//speedX = -1;
-		//speedY = -1;
 		// Цвет мяча выбирается случайно
 		color = new Color((float)Math.random(), (float)Math.random(), (float)Math.random());
 		// Начальное положение мяча случайно
 		do{
 			x = Math.random()*(field.getSize().getWidth()-2*radius) + radius;
 			y = Math.random()*(field.getSize().getHeight()-2*radius) + radius;
-		}while(brick_collide(true)==true);
-		//x = 100;
-		//y = 100;
+		}while(brick_collide(true)==true); //Цикл нужен, чтобы мячи не появились в кирпичах
 		// Созда?м новый экземпляр потока, передавая аргументом
 		// ссылку на класс, реализующий Runnable (т.е. на себя)
 		Thread thisThread = new Thread(this);
@@ -68,8 +64,6 @@ public class BouncingBall implements Runnable{
 	// то завершается и поток
 	public void run(){
 		try {
-			// Крутим бесконечный цикл, т.е. пока нас не прервут,
-			// мы не намерены завершаться
 			while(true){
 				// Синхронизация потоков на самом объекте поля
 				// Если движение разрешено - управление будет
@@ -123,37 +117,37 @@ public class BouncingBall implements Runnable{
 	
 	private boolean brick_collide(boolean ball_creating){
 		boolean collided = false;
-		for(int i=0; i<BRICKS_IN_WIDTH; i++){
+		for(int i=0; i<BRICKS_IN_WIDTH; i++){ //Проверка по всем кирпичам
 			for(int j=0; j<BRICKS_IN_HEIGHT; j++){
 				if(bricks[i][j].check_strikable()){
+					//Координаты углов 
 					double win_x0 = bricks[i][j].get_coordX(0);
 					double win_x1 = bricks[i][j].get_coordX(1);
 					double win_y0 = bricks[i][j].get_coordY(0);
 					double win_y1 = bricks[i][j].get_coordY(1);
+					//Координаты середины
 					double win_xc = (win_x0 + win_x1)/2;
 					double win_yc = (win_y0 + win_y1)/2;
+					//Положения краев мяча с учетом скорости
 					double y0 = y + speedY + radius;
 					double y1 = y + speedY - radius;
 					double x0 = x + speedX + radius;
 					double x1 = x + speedX - radius;
+					//Провекрка на столкновение с верхней/нижней стороной
 					if((x>=win_x0 && x<= win_x1)||(x>=win_x0 && x<= win_x1)){
-						
 						if(y0 >= win_y0 && y0 <= win_yc){
 							speedY = -speedY;
-							
 							y=new Double(win_y0-radius).intValue();
 							collided = true;
 						}
 						else if(y1 <= win_y1 && y1 >= win_yc){
 							speedY = -speedY;
-							
 							y=new Double(win_y1+radius).intValue();
 							collided = true;
 						}
 					}
+					//Провекрка на столкновение с левой/правой стороной
 					else if((y>=win_y0 && y<= win_y1)||(y>=win_y0 && y<= win_y1)){
-						
-						//System.out.println('y');
 						if(x0 >= win_x0 && x0 <= win_xc){
 							speedX = -speedX;
 							x=new Double(win_x0-radius).intValue();
@@ -165,21 +159,29 @@ public class BouncingBall implements Runnable{
 							collided = true;
 						}
 					}
+					//Провекрка на столкновение с углами
+					/*Здесь сраавнивается расстояние от центра шара до центра кирпича
+					суммой половины диагонали и радиуса. Коеффициент 1.4 служит для уменьшения правой части неравенства
+					для корректной работы.
+					*/
 					else if(Math.sqrt(Math.pow(win_yc-y, 2)+Math.pow(win_xc-x, 2))<=(Math.sqrt(Math.pow(win_yc-win_y0, 2)+Math.pow(win_xc-win_x0, 2))+radius)/1.4){
-							
-							speedX = -speedX;
-							speedY = -speedY;
-							x += speedX;
-							y += speedY;
-							collided = true;
+						speedX = -speedX;
+						speedY = -speedY;
+						x += speedX;
+						y += speedY;
+						collided = true;
 						
 					}
-					
-					
-					
+					else if(ball_creating == true){
+						if(Math.sqrt(Math.pow(win_yc-y, 2)+Math.pow(win_xc-x, 2))<=(Math.sqrt(Math.pow(win_yc-win_y0, 2)+Math.pow(win_xc-win_x0, 2))+radius)*2){
+							//Исправление бага, когда мяч появляется в стене
+							return true;
+						}
+
+					}
 					if(collided){
 						if(ball_creating == false){
-							bricks[i][j].strike();
+							bricks[i][j].strike(); //уменьшить прочность кирпича, если это не этап создания шара
 						}
 						return true;
 					}

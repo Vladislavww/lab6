@@ -16,12 +16,15 @@ public class MainFrame extends JFrame{
 	// не распахнуто на весь экран
 	private static final int WIDTH = 800;
 	private static final int HEIGHT = 800;
+	private JMenuItem addBallMenuItem;
 	private JMenuItem pauseMenuItem;
 	private JMenuItem resumeMenuItem;
 	private JMenuItem brickMenuItem;
+	private final int MAX_BALLS = 1; //Несмотря на задание, это ограничение можно безболезненно снять
+	private int balls_number = 0;
 	// Поле, по которому прыгают мячи
 	private Field field = new Field();
-	// Конструктор главного окна приложения
+
 	public MainFrame(){
 		super("Программирование и синхронизация потоков");
 		setSize(WIDTH, HEIGHT);
@@ -37,17 +40,24 @@ public class MainFrame extends JFrame{
 		JMenu ballMenu = new JMenu("Мячи");
 		Action addBallAction = new AbstractAction("Добавить мяч"){
 			public void actionPerformed(ActionEvent event){
-				field.addBall();
-				if (!pauseMenuItem.isEnabled() &&!resumeMenuItem.isEnabled()){
-					// Ни один из пунктов меню не являются
-					// доступными - сделать доступным "Паузу"
-					pauseMenuItem.setEnabled(true);
-					brickMenuItem.setEnabled(false); //первый шар запустили - поздно ставить препятствия
+				if(balls_number < MAX_BALLS){
+					field.addBall();
+					balls_number += 1;
+					if (!pauseMenuItem.isEnabled() &&!resumeMenuItem.isEnabled()){
+						// Ни один из пунктов меню не являются
+						// доступными - сделать доступным "Паузу"
+						pauseMenuItem.setEnabled(true);
+						brickMenuItem.setEnabled(false); //первый шар запустили - поздно ставить препятствия
+					}
+				}
+				if(balls_number >= MAX_BALLS){
+					addBallMenuItem.setEnabled(false);
 				}
 			}
 		};
+		addBallMenuItem = ballMenu.add(addBallAction);
 		menuBar.add(ballMenu);
-		ballMenu.add(addBallAction);
+		
 		JMenu controlMenu = new JMenu("Управление");
 		menuBar.add(controlMenu);
 		Action pauseAction = new AbstractAction("Приостановить движение"){
@@ -83,9 +93,8 @@ public class MainFrame extends JFrame{
 		getContentPane().add(field, BorderLayout.CENTER);
 		
 	}
-	// Главный метод приложения
+
 	public static void main(String[] args){
-		// Создать и сделать видимым главное окно приложения
 		MainFrame frame = new MainFrame();
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.setVisible(true);

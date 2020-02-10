@@ -13,9 +13,7 @@ import javax.swing.Timer;
 @SuppressWarnings("serial")
 
 public class Field extends JPanel{
-	// Флаг приостановленности движения
 	private boolean paused;
-	// Динамический список скачущих мячей
 	private ArrayList<BouncingBall> balls = new ArrayList<BouncingBall>(10);
 	
 	// Класс таймер отвечает за регулярную генерацию событий ActionEvent
@@ -29,22 +27,19 @@ public class Field extends JPanel{
 		}
 	});
 	private static final int BRICKS_IN_WIDTH = 20;
-	private static final int BRICKS_IN_HEIGHT = 4; //колическтво кирпичей по длине и ширине
+	private static final int BRICKS_IN_HEIGHT = 10; //колическтво кирпичей по длине и ширине
 	private BrickClass[][] bricks = new BrickClass[BRICKS_IN_WIDTH][BRICKS_IN_HEIGHT];
-	private boolean added_bricks = false;
-	// Конструктор класса BouncingBall
+	private boolean added_bricks = false;//флаг наличия кирпичей
+
 	public Field() {
-		// Установить цвет заднего фона белым
 		setBackground(Color.WHITE);
-		// Запустить таймер
 		repaintTimer.start();
 	}
 	// Унаследованный от JPanel метод перерисовки компонента
 	public void paintComponent(Graphics g){
-		// Вызвать версию метода, унаследованную от предка
 		super.paintComponent(g);
 		Graphics2D canvas = (Graphics2D) g;
-		// Последовательно запросить прорисовку от всех мячей из списка
+		//Прорисовать все кирпичи
 		if(added_bricks){
 			for(int i=0;i<BRICKS_IN_WIDTH; i++){
 				for(int j=0; j<BRICKS_IN_HEIGHT; j++){
@@ -52,6 +47,7 @@ public class Field extends JPanel{
 				}
 			}
 		}
+		// Последовательно запросить прорисовку от всех мячей из списка
 		for (BouncingBall ball: balls){
 			ball.paint(canvas);
 		}
@@ -61,14 +57,20 @@ public class Field extends JPanel{
 		//Заключается в добавлении в список нового экземпляра BouncingBall
 		// Всю инициализацию положения, скорости, размера, цвета
 		// BouncingBall выполняет сам в конструкторе
-		balls.add(new BouncingBall(this, bricks));
+		if(added_bricks){
+			balls.add(new BouncingBall(this, bricks, BRICKS_IN_WIDTH, BRICKS_IN_HEIGHT));
+		}
+		else{
+			balls.add(new BouncingBall(this, bricks, -1, -1));
+		}
 	}
+	
+	//Метод создания объектов-кирпчей в матрице
 	public void addBrick(){
 		for(int i=0; i<BRICKS_IN_WIDTH; i++){
 			for(int j=0; j<BRICKS_IN_HEIGHT; j++){
 				BrickClass brick = new BrickClass(this, i, j);
 				bricks[i][j] = brick;
-				//bricks.add(new BrickClass(this, i, j, bricks));
 				
 			}
 		}
