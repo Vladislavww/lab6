@@ -15,12 +15,12 @@ public class MainFrame extends JFrame{
 	// Константы, задающие размер окна приложения, если оно
 	// не распахнуто на весь экран
 	private static final int WIDTH = 800;
-	private static final int HEIGHT = 800;
+	private static final int HEIGHT = 860;
 	private JMenuItem addBallMenuItem;
 	private JMenuItem pauseMenuItem;
 	private JMenuItem resumeMenuItem;
 	private JMenuItem brickMenuItem;
-	private final int MAX_BALLS = 1; //Несмотря на задание, это ограничение можно безболезненно снять
+	private final int MAX_BALLS = 100; //Несмотря на задание, это ограничение можно безболезненно снять
 	private int balls_number = 0;
 	// Поле, по которому прыгают мячи
 	private Field field = new Field();
@@ -33,7 +33,7 @@ public class MainFrame extends JFrame{
 		setLocation((kit.getScreenSize().width - WIDTH)/2,
 		(kit.getScreenSize().height - HEIGHT)/2);
 		// Установить начальное состояние окна разв?рнутым на весь экран
-		setExtendedState(MAXIMIZED_BOTH);
+		//setExtendedState(MAXIMIZED_BOTH);
 		// Создать меню
 		JMenuBar menuBar = new JMenuBar();
 		setJMenuBar(menuBar);

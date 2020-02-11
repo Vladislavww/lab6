@@ -34,6 +34,7 @@ public class BouncingBall implements Runnable{
 		BRICKS_IN_HEIGHT = BRICKS_HEIGHT;
 		// Радиус мяча случайного размера
 		radius = new Double(Math.random()*(MAX_RADIUS - MIN_RADIUS)).intValue() + MIN_RADIUS;
+		//radius = 6;
 		// Абсолютное значение скорости зависит от диаметра мяча,
 		// чем он больше, тем медленнее
 		speed = new Double(Math.round(5*MAX_SPEED / radius)).intValue();
@@ -43,9 +44,12 @@ public class BouncingBall implements Runnable{
 		// Начальное направление скорости тоже случайно,
 		// угол в пределах от 0 до 2PI
 		double angle = Math.random()*2*Math.PI;
+		//angle = Math.PI/4 + Math.PI;
 		// Вычисляются горизонтальная и вертикальная компоненты скорости
 		speedX = 3*Math.cos(angle);
 		speedY = 3*Math.sin(angle);
+		//speedX = -1;
+		//speedY = -1;
 		// Цвет мяча выбирается случайно
 		color = new Color((float)Math.random(), (float)Math.random(), (float)Math.random());
 		// Начальное положение мяча случайно
@@ -53,6 +57,8 @@ public class BouncingBall implements Runnable{
 			x = Math.random()*(field.getSize().getWidth()-2*radius) + radius;
 			y = Math.random()*(field.getSize().getHeight()-2*radius) + radius;
 		}while(brick_collide(true)==true); //Цикл нужен, чтобы мячи не появились в кирпичах
+		//x = 100;
+		//y = 100;
 		// Созда?м новый экземпляр потока, передавая аргументом
 		// ссылку на класс, реализующий Runnable (т.е. на себя)
 		Thread thisThread = new Thread(this);
@@ -93,11 +99,14 @@ public class BouncingBall implements Runnable{
 			// Достигли левой стенки, отскакиваем право
 			speedX = -speedX;
 			x = radius;
+			//angle = (Math.PI*2-Math.signum(speedY)*(Math.PI-angle))%(Math.PI*2);
 		}
 		else if (x + speedX >= field.getWidth() - radius){
 			// Достигли правой стенки, отскок влево
 			speedX = -speedX;
 			x=new Double(field.getWidth()-radius).intValue();
+			//angle = (Math.PI+Math.signum(speedY)*(Math.PI*2-angle))%(Math.PI*2);
+			
 		} 
 		else if (y + speedY <= radius){
 			// Достигли верхней стенки
@@ -164,13 +173,97 @@ public class BouncingBall implements Runnable{
 					суммой половины диагонали и радиуса. Коеффициент 1.4 служит для уменьшения правой части неравенства
 					для корректной работы.
 					*/
-					else if(Math.sqrt(Math.pow(win_yc-y, 2)+Math.pow(win_xc-x, 2))<=(Math.sqrt(Math.pow(win_yc-win_y0, 2)+Math.pow(win_xc-win_x0, 2))+radius)/1.4){
+					/*else if(Math.sqrt(Math.pow(win_yc-y, 2)+Math.pow(win_xc-x, 2))<=(Math.sqrt(Math.pow(win_yc-win_y0, 2)+Math.pow(win_xc-win_x0, 2))+radius)/1.4){
 						speedX = -speedX;
 						speedY = -speedY;
 						x += speedX;
 						y += speedY;
 						collided = true;
 						
+					}*/
+					else if(Math.sqrt(Math.pow(win_y1-y, 2)+Math.pow(win_x1-x, 2))<=radius){
+						double strike_angle= Math.PI + Math.atan((x-win_x1)/(y-win_y1));
+						double angle = Math.PI + Math.atan(speedY/speedX);
+						/*System.out.println(strike_angle);
+						System.out.println(angle);
+						System.out.println((x-win_x1)/(y-win_y1));*/
+						if(angle<strike_angle){
+							angle = strike_angle-Math.PI/2;
+						}
+						else if(angle>strike_angle){
+							angle = strike_angle+Math.PI/2;
+						}
+						else if(angle==strike_angle){
+							angle -= Math.PI;
+						}
+						collided = true;
+						speedX = 3*Math.cos(angle);
+						speedY = 3*Math.sin(angle);
+						x += 2*speedX;
+						y += 2*speedY;
+					}
+					else if(Math.sqrt(Math.pow(win_y1-y, 2)+Math.pow(win_x0-x, 2))<=radius){
+						double strike_angle= Math.PI*3/2 + Math.atan((win_x0-x)/(y-win_y1));
+						double angle = Math.PI*3/2 - Math.atan(speedY/speedX);
+						/*System.out.println(strike_angle);
+						System.out.println(angle);
+						System.out.println((x-win_x1)/(y-win_y1));*/
+						if(angle<strike_angle){
+							angle = strike_angle-Math.PI/2;
+						}
+						else if(angle>strike_angle){
+							angle = strike_angle+Math.PI/2;
+						}
+						else if(angle==strike_angle){
+							angle -= Math.PI;
+						}
+						collided = true;
+						speedX = 3*Math.cos(angle);
+						speedY = 3*Math.sin(angle);
+						x += 2*speedX;
+						y += 2*speedY;
+					}
+					else if(Math.sqrt(Math.pow(win_y0-y, 2)+Math.pow(win_x1-x, 2))<=radius){
+						double strike_angle= Math.PI/2 + Math.atan((x-win_x1)/(win_y0-y));
+						double angle = Math.PI/2 - Math.atan(speedY/speedX);
+						/*System.out.println(strike_angle);
+						System.out.println(angle);
+						System.out.println((x-win_x1)/(y-win_y1));*/
+						if(angle<strike_angle){
+							angle = strike_angle-Math.PI/2;
+						}
+						else if(angle>strike_angle){
+							angle = strike_angle+Math.PI/2;
+						}
+						else if(angle==strike_angle){
+							angle -= Math.PI;
+						}
+						collided = true;
+						speedX = 3*Math.cos(angle);
+						speedY = 3*Math.sin(angle);
+						x += 2*speedX;
+						y += 2*speedY;
+					}
+					else if(Math.sqrt(Math.pow(win_y0-y, 2)+Math.pow(win_x0-x, 2))<=radius){
+						double strike_angle= Math.atan((win_x0-x)/(win_y0-y));
+						double angle = Math.atan(speedY/speedX);
+						/*System.out.println(strike_angle);
+						System.out.println(angle);
+						System.out.println((x-win_x1)/(y-win_y1));*/
+						if(angle<strike_angle){
+							angle = strike_angle-Math.PI/2;
+						}
+						else if(angle>strike_angle){
+							angle = strike_angle+Math.PI/2;
+						}
+						else if(angle==strike_angle){
+							angle -= Math.PI;
+						}
+						collided = true;
+						speedX = 3*Math.cos(angle);
+						speedY = 3*Math.sin(angle);
+						x += 2*speedX;
+						y += 2*speedY;
 					}
 					else if(ball_creating == true){
 						if(Math.sqrt(Math.pow(win_yc-y, 2)+Math.pow(win_xc-x, 2))<=(Math.sqrt(Math.pow(win_yc-win_y0, 2)+Math.pow(win_xc-win_x0, 2))+radius)*2){
